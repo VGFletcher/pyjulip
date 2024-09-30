@@ -10,6 +10,7 @@ from julia import Main
 Main.eval("using ASE, JuLIP, ACE1")
 
 from julia.JuLIP import energy, forces, stress, mat, positions, cell
+from julia.ACE1 import co_energy
 
 ASEAtoms = Main.eval("ASEAtoms(a) = ASE.ASEAtoms(a)")
 ASECalculator = Main.eval("ASECalculator(c) = ASE.ASECalculator(c)")
@@ -30,7 +31,7 @@ class JulipCalculator(Calculator):
     """
     ASE-compatible Calculator that calls JuLIP.jl for forces and energy
     """
-    implemented_properties = ['forces', 'energy', 'free_energy', 'stress']
+    implemented_properties = ['forces', 'energy', 'free_energy', 'stress', 'co_ene_std']
     default_parameters = {}
     name = 'JulipCalculator'
 
@@ -52,7 +53,9 @@ class JulipCalculator(Calculator):
         if 'stress' in properties:
             voigt_stress = full_3x3_to_voigt_6_stress(np.array(stress(self.julip_calculator, julia_atoms)))
             self.results['stress'] = voigt_stress
-
+        if 'co_ene_std' in properties:
+            m_E, co_E = co_energy(self.julip_calculator, julia_atoms)
+            self.results['co_ene_std'] = np.mean((np.array(co_E) - m_E)**2)**0.5
 
 class JulipOptimizer(Optimizer):
     """
