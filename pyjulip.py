@@ -44,7 +44,7 @@ class JulipCalculator(Calculator):
         julia_atoms = ASEAtoms(atoms)
         julia_atoms = convert(julia_atoms)
         self.results = {}
-        if 'energy' in properties:
+        if 'energy' in properties or 'free_energy' in properties:
             E = energy(self.julip_calculator, julia_atoms)
             self.results['energy'] = E
             self.results['free_energy'] = E
